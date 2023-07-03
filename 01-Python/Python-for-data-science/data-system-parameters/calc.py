@@ -4,9 +4,8 @@ import sys
 
 def main():
     """Implement the calculator"""
-    pass  # YOUR CODE HERE
-
+    # YOUR CODE HERE
+    return eval(f'{sys.argv[1]} {sys.argv[2]} {sys.argv[3]}')
 
 if __name__ == "__main__":
     print(main())
-    
