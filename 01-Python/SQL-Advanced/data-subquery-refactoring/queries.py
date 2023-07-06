@@ -73,39 +73,66 @@ def top_ordered_product_per_customer(db):
     # based on the total ordered amount in USD
     # YOUR CODE HERE
     query = """
-    WITH OrderedProducts AS (
-        SELECT
-            CustomerID,
-            ProductID,
-            SUM(OrderDetails.Quantity * OrderDetails.UnitPrice) AS ProductValue
-        FROM OrderDetails
-        JOIN Orders ON OrderDetails.OrderID = Orders.OrderID
-        GROUP BY Orders.CustomerID, OrderDetails.ProductID
-        ORDER BY ProductValue DESC
-        ),
-
-        Ranks AS (
+        WITH OrderedProducts AS (
             SELECT
-                OrderedProducts.CustomerID,
-                OrderedProducts.ProductID,
-                OrderedProducts.ProductValue,
-                RANK() OVER(
-                    PARTITION BY OrderedProducts.CustomerID
-                    ORDER BY OrderedProducts.ProductValue DESC)
-                AS OrderRank
-            FROM OrderedProducts
-    )
-    SELECT
-        Ranks.CustomerID,
-        Ranks.ProductID,
-        Ranks.ProductValue
-    FROM Ranks
-    WHERE Ranks.OrderRank = 1
-    ORDER BY Ranks.ProductValue DESC
+                CustomerID,
+                ProductID,
+                SUM(OrderDetails.Quantity * OrderDetails.UnitPrice) AS ProductValue
+            FROM OrderDetails
+            JOIN Orders ON OrderDetails.OrderID = Orders.OrderID
+            GROUP BY Orders.CustomerID, OrderDetails.ProductID
+            ORDER BY ProductValue DESC
+            ),
+
+            Ranks AS (
+                SELECT
+                    OrderedProducts.CustomerID,
+                    OrderedProducts.ProductID,
+                    OrderedProducts.ProductValue,
+                    RANK() OVER(
+                        PARTITION BY OrderedProducts.CustomerID
+                        ORDER BY OrderedProducts.ProductValue DESC)
+                    AS OrderRank
+                FROM OrderedProducts
+        )
+        SELECT
+            Ranks.CustomerID,
+            Ranks.ProductID,
+            Ranks.ProductValue
+        FROM Ranks
+        WHERE Ranks.OrderRank = 1
+        ORDER BY Ranks.ProductValue DESC
     """
     db.execute(query)
     return db.fetchall()
 
 def average_number_of_days_between_orders(db):
     # return the average number of days between two consecutive orders of the same customer
-    pass  # YOUR CODE HERE
+    # YOUR CODE HERE
+    query = """
+        WITH OrderDates AS (
+            SELECT
+                Orders.CustomerID,
+                Orders.OrderDate,
+                LAG(Orders.OrderDate, 1, Orders.OrderDate ) OVER (
+                    PARTITION BY Orders.CustomerID
+                    ORDER BY Orders.CustomerID
+                ) AS PreviousOrderDate
+                FROM Orders
+                ORDER BY Orders.CustomerID
+            ),
+            OrderDifference AS (
+            SELECT
+                OrderDates.CustomerID,
+                OrderDates.OrderDate,
+                OrderDates.PreviousOrderDate,
+                JULIANDAY(OrderDates.OrderDate) - JULIANDAY(OrderDates.PreviousOrderDate) AS Diff
+
+        FROM OrderDates
+        )
+        SELECT ROUND(AVG(Diff))
+        FROM OrderDifference
+        WHERE Diff IS NOT 0
+    """
+    db.execute(query)
+    return int(db.fetchone()[0])
