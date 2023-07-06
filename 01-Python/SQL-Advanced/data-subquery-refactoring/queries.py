@@ -71,7 +71,40 @@ def best_customers(db):
 def top_ordered_product_per_customer(db):
     # return the list of the top ordered product by each customer
     # based on the total ordered amount in USD
-    pass  # YOUR CODE HERE
+    # YOUR CODE HERE
+    query = """
+    WITH OrderedProducts AS (
+        SELECT
+            CustomerID,
+            ProductID,
+            SUM(OrderDetails.Quantity * OrderDetails.UnitPrice) AS ProductValue
+        FROM OrderDetails
+        JOIN Orders ON OrderDetails.OrderID = Orders.OrderID
+        GROUP BY Orders.CustomerID, OrderDetails.ProductID
+        ORDER BY ProductValue DESC
+        ),
+
+        Ranks AS (
+            SELECT
+                OrderedProducts.CustomerID,
+                OrderedProducts.ProductID,
+                OrderedProducts.ProductValue,
+                RANK() OVER(
+                    PARTITION BY OrderedProducts.CustomerID
+                    ORDER BY OrderedProducts.ProductValue DESC)
+                AS OrderRank
+            FROM OrderedProducts
+    )
+    SELECT
+        Ranks.CustomerID,
+        Ranks.ProductID,
+        Ranks.ProductValue
+    FROM Ranks
+    WHERE Ranks.OrderRank = 1
+    ORDER BY Ranks.ProductValue DESC
+    """
+    db.execute(query)
+    return db.fetchall()
 
 def average_number_of_days_between_orders(db):
     # return the average number of days between two consecutive orders of the same customer
