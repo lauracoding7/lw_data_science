@@ -49,10 +49,17 @@ def main():
             max_temp = round(forecast['main']['temp_max'])
             print(f"{forecast['dt_txt'][:10]}: {forecast['weather'][0]['main']} ({max_temp}°C)")
 
+main()
+
+print(__name__)
+
 if __name__ == '__main__':
-    try:
-        while True:
-            main()
-    except KeyboardInterrupt:
-        print('\nGoodbye!')
-        sys.exit(0)
+    print(main())
+
+
+    # try:
+    #     while True:
+    #         main()
+    # except KeyboardInterrupt:
+    #     print('\nGoodbye!')
+    #     sys.exit(0)
