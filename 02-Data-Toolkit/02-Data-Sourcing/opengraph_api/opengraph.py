@@ -2,7 +2,7 @@
 """
 Client of the Wagon OpenGraph API
 """
-import pprint
+
 import requests
 
 def fetch_metadata(url):
@@ -10,12 +10,13 @@ def fetch_metadata(url):
     Return a dictionary of OpenGraph metadata found in HTML of given url
     """
     # YOUR CODE HERE
-    response = requests.get("https://opengraph.lewagon.com", params={'url': url})
-    if response.status_code == 200:
+    try:
+        response = requests.get("https://opengraph.lewagon.com", params={'url': url})
         return response.json()["data"]
-    return ""
+    except:
+        return {}
 
 # To manually test, please uncomment the following lines and run `python opengraph.py`:
-if __name__ == "__main__":
-    pp = pprint.PrettyPrinter(indent=4)
-    pp.pprint(fetch_metadata("https://www.github.com"))
+import pprint
+pp = pprint.PrettyPrinter(indent=4)
+pp.pprint(fetch_metadata("https://www.github.com"))
