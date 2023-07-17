@@ -6,7 +6,6 @@ def circle_area(radius):
     # YOUR CODE HERE
     if radius > 0:
         return round(math.pi * radius ** 2, 2)
-    return 0
-
+    return
 c = circle_area(5)
 print(c)
